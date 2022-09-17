@@ -1,38 +1,3 @@
-# Makefile
-
-Here is a Makefile template. It provides some shortcuts for the most common tasks.
-To use it, create a new `Makefile` file at the root of your project. Copy/paste
-the content in the template section. To view all the available commands, run `make`.
-
-For example, in the [getting started section](/README.md#getting-started), the
-`docker compose` commands could be replaced by:
-
-1. Run `make build` to build fresh images
-2. Run `make up` (detached mode without logs)
-3. Run `make down` to stop the Docker containers
-
-Of course, this template is basic for now. But, as your application is growing,
-you will probably want to add some targets like running your tests as described
-in [the Symfony book](https://symfony.com/doc/current/the-fast-track/en/17-tests.html#automating-your-workflow-with-a-makefile).
-You can also find a more complete example in this [snippet](https://www.strangebuzz.com/en/snippets/the-perfect-makefile-for-symfony).
-
-If you want to run make from within the `php` container, in the [Dockerfile](/Dockerfile),
-add:
-
-```diff
-gnu-libiconv \
-+make \
-```
-
-And rebuild the PHP image.
-
-**PS**: If using Windows, you have to install [chocolatey.org](https://chocolatey.org/)
-or use [Cygwin](http://cygwin.com) to use the `make` command. Check out this
-[StackOverflow question](https://stackoverflow.com/q/2532234/633864) for more explanations. 
-
-## The template
-
-```Makefile
 # Executables (local)
 DOCKER_COMP = docker compose
 
@@ -47,6 +12,11 @@ SYMFONY  = $(PHP_CONT) bin/console
 # Misc
 .DEFAULT_GOAL = help
 .PHONY        = help build up start down logs sh composer vendor sf cc
+
+# Executables: vendors
+PHPUNIT       = $(PHP) vendor/bin/phpunit
+PHPSTAN       = $(PHP) vendor/bin/phpstan
+PHP_CS_FIXER  = $(PHP) vendor/bin/php-cs-fixer
 
 ## —— 🎵 🐳 The Symfony Docker Makefile 🐳 🎵 ——————————————————————————————————
 help: ## Outputs this help screen
@@ -86,4 +56,18 @@ sf: ## List all Symfony commands or pass the parameter "c=" to run a given comma
 
 cc: c=c:c ## Clear the cache
 cc: sf
-```
+
+## Webpack ———————————————————————————————————————————————————————————————————
+webpack: ## Start webpack
+	@$(YARN) watch
+
+## —— Tests ✅ ————————————————————————————————————————————————————————————————
+test: ## Unit Tests
+	@$(PHPUNIT) --stop-on-failure
+
+## —— Coding standards ✨ —————————————————————————————————————————————————————
+stan: ## Run PHPStan
+	@$(PHPSTAN) analyse -c phpstan.neon --memory-limit 1G
+
+fix: ## Fix files with php-cs-fixer
+	@$(PHP_CS_FIXER) fix --allow-risky=yes
