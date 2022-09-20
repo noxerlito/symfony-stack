@@ -8,6 +8,7 @@ PHP_CONT = $(DOCKER_COMP) exec php
 PHP      = $(PHP_CONT) php
 COMPOSER = $(PHP_CONT) composer
 SYMFONY  = $(PHP_CONT) bin/console
+YARN = $(DOCKER_COMP) run node yarn
 
 # Misc
 .DEFAULT_GOAL = help
@@ -26,16 +27,16 @@ help: ## Outputs this help screen
 build: ## Builds the Docker images
 	@$(DOCKER_COMP) build --pull --no-cache
 
-up: ## Start the docker hub in detached mode (no logs)
+up: ## Start the docker hub in detached mode (with logs)
+	@$(DOCKER_COMP) up
+
+upd: ## Start the docker hub in detached mode (no logs)
 	@$(DOCKER_COMP) up --detach
 
-start: build up ## Build and start the containers
+start: build upd ## Build and start the containers
 
 down: ## Stop the docker hub
 	@$(DOCKER_COMP) down --remove-orphans
-
-logs: ## Show live logs
-	@$(DOCKER_COMP) logs --tail=0 --follow
 
 sh: ## Connect to the PHP FPM container
 	@$(PHP_CONT) sh
@@ -57,9 +58,23 @@ sf: ## List all Symfony commands or pass the parameter "c=" to run a given comma
 cc: c=c:c ## Clear the cache
 cc: sf
 
+fixtures: ## Load fixtures
+	@$(SYMFONY) doctrine:fixtures:load
+
+migrations: ## Generate migrations
+	@$(SYMFONY) doctrine:migrations:diff --formatted
+
+migrate: ## Load migrations
+	@$(SYMFONY) doctrine:migrations:migrate
+
+## —— Yarn  ———————————————————————————————————————————————————————————————
+yarn: ## Pass the parameter "c=" to run a given command, example: make sf c=about
+	@$(eval c ?=)
+	@$(YARN) $(c)
+
 ## Webpack ———————————————————————————————————————————————————————————————————
-webpack: ## Start webpack
-	@$(YARN) watch
+watch: ## Start webpack
+	@$(YARN) --cwd /srv/app watch
 
 ## —— Tests ✅ ————————————————————————————————————————————————————————————————
 test: ## Unit Tests
@@ -71,3 +86,6 @@ stan: ## Run PHPStan
 
 fix: ## Fix files with php-cs-fixer
 	@$(PHP_CS_FIXER) fix --allow-risky=yes
+
+twigcs: ## Check twig coding standards
+	@(PHP) twigcs /tempates/
