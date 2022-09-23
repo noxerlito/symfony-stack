@@ -6,6 +6,25 @@
 # https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG PHP_VERSION=8.1
 ARG CADDY_VERSION=2
+ARG NODE_VERSION=18.9.0
+
+# Node
+FROM node:${NODE_VERSION}-alpine AS app_node
+
+WORKDIR /srv/app
+
+RUN mkdir public
+
+COPY package.json yarn.lock ./
+
+RUN yarn install
+
+COPY assets assets/
+COPY webpack.config.js ./
+
+RUN yarn build
+
+CMD ["yarn", "watch"]
 
 # Prod image
 FROM php:${PHP_VERSION}-fpm-alpine AS app_php

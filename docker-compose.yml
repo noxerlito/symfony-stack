@@ -56,6 +56,18 @@ services:
 # Mercure is installed as a Caddy module, prevent the Flex recipe from installing another service
 ###> symfony/mercure-bundle ###
 ###< symfony/mercure-bundle ###
+  
+  node:
+    build:
+      context: .
+      target: app_node
+    environment:
+      NODE_VERSION: ${NODE_VERSION:-18.9.0}
+    image: node:${NODE_VERSION:-18.9.0}-alpine
+    ports:
+      - "${DEV_SERVER_PORT:-8080}:8080"
+    volumes:
+      - .:/srv/app
 
 ###> doctrine/doctrine-bundle ###
   database:
