@@ -8,7 +8,7 @@ PHP_CONT = $(DOCKER_COMP) exec php
 PHP      = $(PHP_CONT) php
 COMPOSER = $(PHP_CONT) composer
 SYMFONY  = $(PHP_CONT) bin/console
-YARN = $(DOCKER_COMP) run node yarn
+YARN = $(DOCKER_COMP) exec node yarn
 
 # Misc
 .DEFAULT_GOAL = help
