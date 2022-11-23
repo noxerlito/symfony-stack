@@ -98,7 +98,7 @@ jobs:
               run: |
                   php bin/console doctrine:cache:clear-metadata
                   php bin/console doctrine:database:create --if-not-exists
-                  php bin/console doctrine:migrations:migrate
-                  php bin/console doctrine:fixtures:load
+                  php bin/console doctrine:migrations:migrate --allow-no-migration -n
+                  php bin/console doctrine:fixtures:load -n
             - name: Run functionnal and unit tests
               run: php vendor/bin/phpunit --stop-on-failure
