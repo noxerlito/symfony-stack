@@ -68,7 +68,8 @@ services:
       - "${DEV_SERVER_PORT:-8080}:8080"
     volumes:
       - .:/srv/app
-    command: sh -c "yarn install && yarn dev-server --host=0.0.0.0"
+    command: sh -c "yarn install && yarn watch"
+    
 ###> doctrine/doctrine-bundle ###
   database:
     image: postgres:${POSTGRES_VERSION:-14}-alpine

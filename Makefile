@@ -18,6 +18,7 @@ YARN = $(DOCKER_COMP) exec node yarn
 PHPUNIT       = $(PHP) vendor/bin/phpunit
 PHPSTAN       = $(PHP) vendor/bin/phpstan
 PHP_CS_FIXER  = $(PHP) vendor/bin/php-cs-fixer
+TWIGCS        = $(PHP) vendor/bin/twigcs
 
 ## —— 🎵 🐳 The Symfony Docker Makefile 🐳 🎵 ——————————————————————————————————
 help: ## Outputs this help screen
@@ -47,7 +48,7 @@ composer: ## Run composer, pass the parameter "c=" to run a given command, examp
 	@$(COMPOSER) $(c)
 
 vendor: ## Install vendors according to the current composer.lock file
-vendor: c=install --prefer-dist --no-dev --no-progress --no-scripts --no-interaction
+vendor: c=install --prefer-dist --no-progress --no-scripts --no-interaction
 vendor: composer
 
 ## —— Symfony 🎵 ———————————————————————————————————————————————————————————————
@@ -59,7 +60,13 @@ cc: c=c:c ## Clear the cache
 cc: sf
 
 fixtures: ## Load fixtures
-	@$(SYMFONY) doctrine:fixtures:load
+	@$(SYMFONY) doctrine:fixtures:load -n
+
+db: ## Build the DB
+	@$(SYMFONY) doctrine:cache:clear-metadata
+	@$(SYMFONY) doctrine:database:drop --force
+	@$(SYMFONY) doctrine:database:create --if-not-exists
+	@$(SYMFONY) doctrine:migrations:migrate -n
 
 migrations: ## Generate migrations
 	@$(SYMFONY) doctrine:migrations:diff --formatted
@@ -87,5 +94,10 @@ stan: ## Run PHPStan
 fix: ## Fix files with php-cs-fixer
 	@$(PHP_CS_FIXER) fix --allow-risky=yes
 
+lint-php: ## Lint files with php-cs-fixer
+	@$(PHP_CS_FIXER) fix --allow-risky=yes --dry-run
+
 twigcs: ## Check twig coding standards
-	@(PHP) twigcs /tempates/
+	@$(TWIGCS) templates/
+
+ci: lint-php stan twigcs
